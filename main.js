@@ -1,4 +1,6 @@
-require('dotenv').config()
+require('dotenv').config();
+const { addUserToDatabase } = require('./auth');
+
 ////////// Telegram variables
 const TelegramBot = require('node-telegram-bot-api');
 const token =process.env.TELEGRAM_TOKEN;
@@ -9,16 +11,27 @@ const bot = new TelegramBot(token,{polling:{
     }
 }});
 ////////// Telegram variables
+const { MongoClient } = require('mongodb');
+const uri = process.env.DATABASE_URL;
 function loginfo(){
     console.log('\n\n////////// START LOG INFO ////////////////');
     console.log(arguments);
     console.log('////////// END LOG INFO /////////////////');
 }
-
-bot.on("message",async (msg)=>{
-    const chatid = msg.chat.id;
-    const chatmessage = msg.text;
-    const newmessage ="you send " + chatmessage;
-    bot.sendMessage(chatid,newmessage);
-    loginfo(chatid,chatmessage,msg.chat.first_name,msg.chat.last_name,msg.chat.username);
-});
+bot.onText(/\/register/, (msg) => {
+    const chatId = msg.chat.id;
+    const message = 'Please enter your Organization ID:';
+    bot.sendMessage(chatId, message);
+    bot.once('message', (orgIdMsg) => {
+      const orgId = orgIdMsg.text;
+      const message = 'Please enter your API_KEY:';
+      bot.sendMessage(chatId, message);
+      bot.once('message', async (apiKeyMsg) => {
+        const apiKey = apiKeyMsg.text;
+        await addUserToDatabase(chatId, orgId, apiKey);
+        const message = 'You have been registered successfully!';
+        bot.sendMessage(chatId, message);
+        loginfo(msg.chat.id,msg.chat.first_name,msg.chat.username);
+      });
+    });
+  });

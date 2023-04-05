@@ -4,7 +4,7 @@
   "description": "node js telegram bot that using user api to create ChatGPT-3.5-turbo chat",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon main.js"
   },
   "repository": {
     "type": "git",
