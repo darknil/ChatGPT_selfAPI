@@ -14,16 +14,43 @@ async function connectToDatabase() {
   }
 
 // function for check user in database
-
-// function for add user in database
-async function addUserToDatabase(chatId, orgId, apiKey) {
-    const client = await connectToDatabase();
+async function checkUserInDatabase(userId){
+  const client = await connectToDatabase();
+  try {
     const db = client.db('usersDB');
     const collection = db.collection('users');
-    const user = { chatId, orgId, apiKey };
+    const query = { chatId: userId };
+    const result = await collection.findOne(query);
+      if(result){
+        console.log(result);
+        return true;
+      }else{
+        return false;
+      }
+  } catch (error) {
+    console.error(err);
+  }finally{
+    client.close();
+  }
+
+}
+// function for add user in database
+async function addUserToDatabase(chatId, orgId, apiKey) {
+  const client = await connectToDatabase();
+  try {
+    
+    const db = client.db('usersDB');
+    const collection = db.collection('users');
+    const user = { chatId, orgId, apiKey, messages:[] };
     await collection.insertOne(user);
     console.log(`User with chat ID ${chatId} added to database!`);
+  } catch (error) {
+    console.error(err);
+  }finally{
     client.close();
+  }
+
+    
   }
 // function for update user messages array
 
@@ -33,5 +60,6 @@ async function addUserToDatabase(chatId, orgId, apiKey) {
 
 
 module.exports ={
-    addUserToDatabase
+    addUserToDatabase,
+    checkUserInDatabase
 }
